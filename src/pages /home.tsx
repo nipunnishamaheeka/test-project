@@ -83,12 +83,12 @@ const HomePage: React.FC = () => {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 py-8 bg-black text-white min-h-screen">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-gray-800">User Management</h1>
+        <h1 className="text-2xl font-bold text-white">User Management</h1>
         <button
           onClick={() => setShowCreateForm(!showCreateForm)}
-          className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
+          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded"
         >
           {showCreateForm ? 'Cancel' : 'Create User'}
         </button>
@@ -96,21 +96,21 @@ const HomePage: React.FC = () => {
 
       {/* Error message */}
       {error && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+        <div className="bg-red-900 border border-red-700 text-white px-4 py-3 rounded mb-4">
           {error}
         </div>
       )}
 
       {/* Create User Form Modal - Updated for better UI */}
       {showCreateForm && (
-        <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4 backdrop-blur-sm transition-all duration-300">
-          <div className="bg-white rounded-xl shadow-2xl p-0 max-w-2xl w-full max-h-[90vh] overflow-y-auto animate-fadeIn">
-            <div className="bg-gray-50 p-6 border-b border-gray-100 rounded-t-xl">
+        <div className="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-50 p-4 backdrop-blur-sm transition-all duration-300">
+          <div className="bg-gray-900 rounded-xl shadow-2xl p-0 max-w-2xl w-full max-h-[90vh] overflow-y-auto animate-fadeIn border border-gray-700">
+            <div className="bg-gray-800 p-6 border-b border-gray-700 rounded-t-xl">
               <div className="flex justify-between items-center">
-                <h2 className="text-2xl font-bold text-gray-800">Create New User</h2>
+                <h2 className="text-2xl font-bold text-white">Create New User</h2>
                 <button 
                   onClick={() => setShowCreateForm(false)}
-                  className="text-gray-500 hover:text-gray-700 bg-white hover:bg-gray-100 rounded-full p-2 transition-colors"
+                  className="text-gray-300 hover:text-white bg-gray-700 hover:bg-gray-600 rounded-full p-2 transition-colors"
                   aria-label="Close modal"
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
@@ -118,7 +118,7 @@ const HomePage: React.FC = () => {
                   </svg>
                 </button>
               </div>
-              <p className="text-gray-600 mt-2">Fill in the details to create a new user</p>
+              <p className="text-gray-400 mt-2">Fill in the details to create a new user</p>
             </div>
             
             <div className="p-6">
@@ -130,13 +130,13 @@ const HomePage: React.FC = () => {
 
       {/* User Details Modal */}
       {selectedUser && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-lg p-6 max-w-2xl w-full max-h-screen overflow-y-auto">
+        <div className="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-50">
+          <div className="bg-gray-900 rounded-lg shadow-lg p-6 max-w-2xl w-full max-h-screen overflow-y-auto border border-gray-700">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold">User Details</h2>
+              <h2 className="text-xl font-bold text-white">User Details</h2>
               <button 
                 onClick={closeDetailsModal}
-                className="text-gray-500 hover:text-gray-700"
+                className="text-gray-400 hover:text-white"
               >
                 ✕
               </button>
@@ -144,32 +144,32 @@ const HomePage: React.FC = () => {
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <h3 className="font-bold mb-2">Basic Information</h3>
-                <div className="bg-gray-50 p-4 rounded">
-                  <p><strong>User ID:</strong> {selectedUser.uid}</p>
-                  <p><strong>Full Name:</strong> {selectedUser.name || 'N/A'}</p>
-                  <p><strong>Given Name:</strong> {selectedUser.given_name || 'N/A'}</p>
-                  <p><strong>Middle Name:</strong> {selectedUser.middle_name || 'N/A'}</p>
-                  <p><strong>Family Name:</strong> {selectedUser.family_name || 'N/A'}</p>
-                  <p><strong>Nickname:</strong> {selectedUser.nickname || 'N/A'}</p>
+                <h3 className="font-bold mb-2 text-gray-300">Basic Information</h3>
+                <div className="bg-gray-800 p-4 rounded border border-gray-700">
+                  <p className="text-white"><strong className="text-gray-300">User ID:</strong> {selectedUser.uid}</p>
+                  <p className="text-white"><strong className="text-gray-300">Full Name:</strong> {selectedUser.name || 'N/A'}</p>
+                  <p className="text-white"><strong className="text-gray-300">Given Name:</strong> {selectedUser.given_name || 'N/A'}</p>
+                  <p className="text-white"><strong className="text-gray-300">Middle Name:</strong> {selectedUser.middle_name || 'N/A'}</p>
+                  <p className="text-white"><strong className="text-gray-300">Family Name:</strong> {selectedUser.family_name || 'N/A'}</p>
+                  <p className="text-white"><strong className="text-gray-300">Nickname:</strong> {selectedUser.nickname || 'N/A'}</p>
                 </div>
               </div>
               
               <div>
-                <h3 className="font-bold mb-2">Contact Information</h3>
-                <div className="bg-gray-50 p-4 rounded">
-                  <p><strong>Email:</strong> {selectedUser.email || 'N/A'}</p>
-                  <p><strong>Phone:</strong> {selectedUser.phone_number || 'N/A'}</p>
-                  <p><strong>Directory:</strong> {selectedUser.directory || 'N/A'}</p>
-                  <p><strong>Comment:</strong> {selectedUser.comment || 'N/A'}</p>
+                <h3 className="font-bold mb-2 text-gray-300">Contact Information</h3>
+                <div className="bg-gray-800 p-4 rounded border border-gray-700">
+                  <p className="text-white"><strong className="text-gray-300">Email:</strong> {selectedUser.email || 'N/A'}</p>
+                  <p className="text-white"><strong className="text-gray-300">Phone:</strong> {selectedUser.phone_number || 'N/A'}</p>
+                  <p className="text-white"><strong className="text-gray-300">Directory:</strong> {selectedUser.directory || 'N/A'}</p>
+                  <p className="text-white"><strong className="text-gray-300">Comment:</strong> {selectedUser.comment || 'N/A'}</p>
                 </div>
               </div>
             </div>
             
             <div className="mt-4">
-              <h3 className="font-bold mb-2">Profile Picture</h3>
+              <h3 className="font-bold mb-2 text-gray-300">Profile Picture</h3>
               {selectedUser.picture ? (
-                <div className="bg-gray-50 p-4 rounded">
+                <div className="bg-gray-800 p-4 rounded border border-gray-700">
                   <img 
                     src={selectedUser.picture} 
                     alt={`${selectedUser.name || selectedUser.uid}'s profile`}
@@ -177,40 +177,40 @@ const HomePage: React.FC = () => {
                   />
                 </div>
               ) : (
-                <div className="bg-gray-50 p-4 rounded">No profile picture</div>
+                <div className="bg-gray-800 p-4 rounded border border-gray-700 text-white">No profile picture</div>
               )}
             </div>
             
             <div className="mt-4">
-              <h3 className="font-bold mb-2">Tags</h3>
-              <div className="bg-gray-50 p-4 rounded">
+              <h3 className="font-bold mb-2 text-gray-300">Tags</h3>
+              <div className="bg-gray-800 p-4 rounded border border-gray-700">
                 {selectedUser.tags && selectedUser.tags.length > 0 ? (
                   <div className="flex flex-wrap gap-2">
                     {selectedUser.tags.map(tag => (
-                      <span key={tag} className="bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                      <span key={tag} className="bg-blue-900 text-blue-300 px-2 py-1 rounded">
                         {tag}
                       </span>
                     ))}
                   </div>
                 ) : (
-                  <p>No tags assigned</p>
+                  <p className="text-white">No tags assigned</p>
                 )}
               </div>
             </div>
             
             <div className="mt-4">
-              <h3 className="font-bold mb-2">Metadata</h3>
-              <div className="bg-gray-50 p-4 rounded">
+              <h3 className="font-bold mb-2 text-gray-300">Metadata</h3>
+              <div className="bg-gray-800 p-4 rounded border border-gray-700">
                 {selectedUser.metadata && Object.keys(selectedUser.metadata).length > 0 ? (
                   <div className="grid grid-cols-2 gap-2">
                     {Object.entries(selectedUser.metadata).map(([key, value]) => (
-                      <div key={key} className="bg-white p-2 rounded">
-                        <strong>{key}:</strong> {JSON.stringify(value)}
+                      <div key={key} className="bg-gray-700 p-2 rounded text-white">
+                        <strong className="text-gray-300">{key}:</strong> {JSON.stringify(value)}
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <p>No metadata available</p>
+                  <p className="text-white">No metadata available</p>
                 )}
               </div>
             </div>
@@ -223,38 +223,38 @@ const HomePage: React.FC = () => {
         <input
           type="text"
           placeholder="Search users by ID, name or email..."
-          className="w-full md:w-1/3 px-4 py-2 border rounded"
+          className="w-full md:w-1/3 px-4 py-2 border rounded bg-gray-800 border-gray-700 text-white placeholder-gray-400"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
       </div>
 
       {/* Users Table */}
-      <div className="overflow-x-auto bg-white rounded-lg shadow">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
+      <div className="overflow-x-auto bg-gray-900 rounded-lg shadow">
+        <table className="min-w-full divide-y divide-gray-700">
+          <thead className="bg-gray-800">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
                 User ID
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
                 Name
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
                 Email
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
                 Phone
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
                 Tags
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
                 Actions
               </th>
             </tr>
           </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
+          <tbody className="bg-gray-900 divide-y divide-gray-700">
             {loading ? (
               <tr>
                 <td colSpan={6} className="px-6 py-4 text-center">
@@ -265,15 +265,15 @@ const HomePage: React.FC = () => {
               </tr>
             ) : filteredUsers.length === 0 ? (
               <tr>
-                <td colSpan={6} className="px-6 py-4 text-center text-gray-500">
+                <td colSpan={6} className="px-6 py-4 text-center text-gray-400">
                   No users found
                 </td>
               </tr>
             ) : (
               filteredUsers.map((user) => (
-                <tr key={user.uid} className="hover:bg-gray-50">
+                <tr key={user.uid} className="hover:bg-gray-800">
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium text-gray-900">{user.uid}</div>
+                    <div className="text-sm font-medium text-white">{user.uid}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
@@ -284,35 +284,35 @@ const HomePage: React.FC = () => {
                           alt={`${user.name || user.uid}'s profile`}
                         />
                       ) : (
-                        <div className="h-8 w-8 rounded-full bg-gray-200 mr-2 flex items-center justify-center">
-                          <span className="text-sm font-medium text-gray-600">
+                        <div className="h-8 w-8 rounded-full bg-gray-700 mr-2 flex items-center justify-center">
+                          <span className="text-sm font-medium text-gray-300">
                             {(user.name || user.uid).charAt(0).toUpperCase()}
                           </span>
                         </div>
                       )}
-                      <div className="text-sm font-medium text-gray-900">
+                      <div className="text-sm font-medium text-white">
                         {user.name || 'N/A'}
                       </div>
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">{user.email || 'N/A'}</div>
+                    <div className="text-sm text-white">{user.email || 'N/A'}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">{user.phone_number || 'N/A'}</div>
+                    <div className="text-sm text-white">{user.phone_number || 'N/A'}</div>
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex flex-wrap gap-1">
                       {(user.tags || []).slice(0, 2).map((tag) => (
                         <span
                           key={tag}
-                          className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800"
+                          className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-900 text-blue-300"
                         >
                           {tag}
                         </span>
                       ))}
                       {(user.tags || []).length > 2 && (
-                        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800">
+                        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-700 text-gray-300">
                           +{user.tags!.length - 2} more
                         </span>
                       )}
@@ -321,13 +321,13 @@ const HomePage: React.FC = () => {
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     <button
                       onClick={() => handleViewDetails(user)}
-                      className="text-blue-600 hover:text-blue-900 mr-3"
+                      className="text-blue-400 hover:text-blue-300 mr-3"
                     >
                       View
                     </button>
                     <button
                       onClick={() => handleDeleteUser(user.uid)}
-                      className="text-red-600 hover:text-red-900"
+                      className="text-red-400 hover:text-red-300"
                     >
                       Delete
                     </button>
