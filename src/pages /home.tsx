@@ -25,12 +25,10 @@ const HomePage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
 
-  // Fetch users data
   useEffect(() => {
     const fetchUsers = async () => {
       setLoading(true);
       try {
-        // Replace with your actual API endpoint
         const response = await fetch('/api/users');
         
         if (!response.ok) {
@@ -41,7 +39,7 @@ const HomePage: React.FC = () => {
         setUsers(data);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to fetch users');
-        // For demo purposes, set some sample data
+
         setUsers(sampleUsers);
       } finally {
         setLoading(false);
@@ -51,7 +49,6 @@ const HomePage: React.FC = () => {
     fetchUsers();
   }, []);
 
-  // Filter users based on search term
   const filteredUsers = users.filter(user => {
     const searchString = searchTerm.toLowerCase();
     return (
@@ -71,10 +68,9 @@ const HomePage: React.FC = () => {
   const handleDeleteUser = async (uid: string) => {
     if (window.confirm('Are you sure you want to delete this user?')) {
       try {
-        // In a real app, make the API call to delete
+
         // await fetch(`/api/users/${uid}`, { method: 'DELETE' });
-        
-        // Update local state
+
         setUsers(prevUsers => prevUsers.filter(user => user.uid !== uid));
       } catch (err) {
         setError('Failed to delete user');
@@ -87,7 +83,6 @@ const HomePage: React.FC = () => {
     setSelectedUser(user);
   };
 
-  // Close user details modal
   const closeDetailsModal = () => {
     setSelectedUser(null);
   };
@@ -410,8 +405,6 @@ const sampleUsers: User[] = [
     metadata: { hours: "20 per week", location: "Remote" }
   }
 ];
-
-// Add this style to your global CSS or in a style tag
 const styles = document.createElement('style');
 styles.innerHTML = `
   @keyframes fadeIn {
