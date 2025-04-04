@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { UserService } from '../services/user.service';
+import { UserService, User, UserDirectory, UserPicture } from '../services/user.service';
 
 interface UserFormData {
   uid: string;
@@ -11,18 +11,15 @@ interface UserFormData {
   email?: string;
   phone_number?: string;
   comment?: string;
-  picture?: string;
-  directory?: string;
+  picture?: string; 
+  directory?: string; 
   metadata?: Record<string, any>;
   tags?: string[];
 }
 
-// Define props for the component
 interface UserCreationFormProps {
-  onUserCreated?: (user: UserFormData) => void;
+  onUserCreated?: (user: User) => void;
 }
-
-// Initial form state
 const initialFormState: UserFormData = {
   uid: '',
   name: '',
@@ -47,14 +44,13 @@ const UserCreationForm: React.FC<UserCreationFormProps> = ({ onUserCreated }) =>
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<boolean>(false);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
 
-  // Handle text input changes
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  // Add metadata key-value pair
   const handleAddMetadata = () => {
     if (!metadataKey.trim()) return;
     
@@ -103,8 +99,7 @@ const UserCreationForm: React.FC<UserCreationFormProps> = ({ onUserCreated }) =>
 
   // Validate form before submission
   const validateForm = (): boolean => {
-    // UID is required and must contain at least one non-digit
-    if (!formData.uid) {
+    if (!formData.uid || formData.uid.trim() === '') {
       setError('User ID is required');
       return false;
     }
@@ -119,13 +114,39 @@ const UserCreationForm: React.FC<UserCreationFormProps> = ({ onUserCreated }) =>
       return false;
     }
     
-    // Email validation (basic)
     if (formData.email && !formData.email.includes('@')) {
       setError('Please enter a valid email address');
       return false;
     }
     
     return true;
+  };
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    
+    if (!file.type.match('image.*')) {
+      setError('Please select an image file');
+      return;
+    }
+    
+    if (file.size > 5 * 1024 * 1024) {
+      setError('Image size should be less than 5MB');
+      return;
+    }
+    
+    // Convert to base64
+    const reader = new FileReader();
+    reader.onload = () => {
+      const base64String = reader.result as string;
+      setImagePreview(base64String);
+      setFormData(prev => ({ ...prev, picture: base64String }));
+    };
+    reader.onerror = () => {
+      setError('Failed to read the image file');
+    };
+    reader.readAsDataURL(file);
   };
 
   // Handle form submission
@@ -138,8 +159,44 @@ const UserCreationForm: React.FC<UserCreationFormProps> = ({ onUserCreated }) =>
     setIsLoading(true);
     
     try {
-      // Use the UserService instead of direct fetch
-      const response = await UserService.createUser(formData);
+      const cleanedData: Partial<User> = {};
+      
+      cleanedData.uid = formData.uid.trim();
+      
+      if (formData.name && formData.name.trim()) cleanedData.name = formData.name.trim();
+      if (formData.given_name && formData.given_name.trim()) cleanedData.given_name = formData.given_name.trim();
+      if (formData.middle_name && formData.middle_name.trim()) cleanedData.middle_name = formData.middle_name.trim();
+      if (formData.family_name && formData.family_name.trim()) cleanedData.family_name = formData.family_name.trim();
+      if (formData.nickname && formData.nickname.trim()) cleanedData.nickname = formData.nickname.trim();
+      if (formData.email && formData.email.trim()) cleanedData.email = formData.email.trim();
+      if (formData.phone_number && formData.phone_number.trim()) cleanedData.phone_number = formData.phone_number.trim();
+      if (formData.comment && formData.comment.trim()) cleanedData.comment = formData.comment.trim();
+      
+      if (formData.directory && formData.directory.trim()) {
+        cleanedData.directory = formData.directory.trim();
+      }
+      
+      // Handle picture field
+      if (formData.picture && formData.picture.trim()) {
+        cleanedData.picture = formData.picture.trim();
+      }
+      
+      // Add non-empty arrays
+      if (formData.tags && formData.tags.length > 0) {
+        cleanedData.tags = formData.tags;
+      }
+      
+      // Add non-empty objects
+      if (formData.metadata && Object.keys(formData.metadata).length > 0) {
+        cleanedData.metadata = formData.metadata;
+      }
+      
+      console.log('Submitting user data:', cleanedData);
+      
+      // Use the UserService to create the user
+      const response = await UserService.createUser(cleanedData);
+      
+      console.log('User creation successful:', response);
       
       setSuccess(true);
       
@@ -148,10 +205,11 @@ const UserCreationForm: React.FC<UserCreationFormProps> = ({ onUserCreated }) =>
         onUserCreated(response);
       }
       
-      // Reset form after successful submission
       setFormData(initialFormState);
+      setImagePreview(null);
       
     } catch (err) {
+      console.error('Error creating user:', err);
       setError(err instanceof Error ? err.message : 'An unknown error occurred');
     } finally {
       setIsLoading(false);
@@ -344,15 +402,56 @@ const UserCreationForm: React.FC<UserCreationFormProps> = ({ onUserCreated }) =>
               <label className="block text-gray-300 font-bold mb-2" htmlFor="picture">
                 Profile Picture
               </label>
-              <input
-                className="bg-gray-800 border border-gray-700 rounded-lg w-full py-3 px-4 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                type="text"
-                id="picture"
-                name="picture"
-                value={formData.picture}
-                onChange={handleInputChange}
-                placeholder="URL, data URI, or blob ID"
-              />
+              <div className="flex flex-col space-y-4">
+                {/* Image preview area */}
+                {imagePreview && (
+                  <div className="relative w-32 h-32 overflow-hidden rounded-lg border-2 border-blue-500 mb-2">
+                    <img 
+                      src={imagePreview} 
+                      alt="Profile preview" 
+                      className="object-cover w-full h-full"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setImagePreview(null);
+                        setFormData(prev => ({ ...prev, picture: '' }));
+                      }}
+                      className="absolute top-1 right-1 bg-red-600 text-white rounded-full p-1 hover:bg-red-700 transition-colors"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                      </svg>
+                    </button>
+                  </div>
+                )}
+                
+                {/* File upload input */}
+                <div className="flex flex-col space-y-4">
+                  <div className="flex items-center">
+                    <label className="flex flex-col items-center px-4 py-2 bg-blue-600 text-white rounded-lg cursor-pointer hover:bg-blue-700 transition-colors">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0l-4 4m4-4v12" />
+                      </svg>
+                      <span className="mt-2 text-base leading-normal">Upload Image</span>
+                      <input type='file' className="hidden" onChange={handleImageUpload} accept="image/*" />
+                    </label>
+                    <span className="ml-3 text-sm text-gray-400">or</span>
+                  </div>
+                  
+                  {/* URL input field */}
+                  <input
+                    className="bg-gray-800 border border-gray-700 rounded-lg w-full py-3 px-4 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                    type="text"
+                    id="picture"
+                    name="picture"
+                    value={(formData.picture ?? "").startsWith("data:image") ? "" : formData.picture ?? ""}
+                    onChange={handleInputChange}
+                    placeholder="Enter image URL"
+                  />
+                </div>
+                <p className="text-sm text-gray-400">Upload an image or provide a URL. Max size: 5MB.</p>
+              </div>
             </div>
             
             <div className="mb-4">

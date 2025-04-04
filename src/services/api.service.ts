@@ -1,21 +1,57 @@
 import { API_CONFIG, ERROR_MESSAGES, HTTP_STATUS } from '../config/api.config';
 
-/**
- * Generic fetch wrapper with error handling
- */
 async function fetchWithConfig<T>(url: string, options: RequestInit = {}): Promise<T> {
   try {
+    // Get the authentication token from localStorage if available
+    const authToken = localStorage.getItem('auth_token');
+    
+    // Prepare headers with authentication if available
+    const headers = {
+      ...API_CONFIG.HEADERS,
+      ...(authToken ? { 'Authorization': `Bearer ${authToken}` } : {})
+    };
+
     const mergedOptions: RequestInit = {
-      headers: API_CONFIG.HEADERS,
+      headers,
       ...options,
     };
 
-    const response = await fetch(url, mergedOptions);
+    console.log(`API Request: ${options.method || 'GET'} ${url}`);
+    if (options.body) {
+      console.log('Request payload:', JSON.parse(options.body as string));
+    }
+    
+    console.log('Request headers:', headers);
+    
+    // Add request timeout
+    const timeoutPromise = new Promise<Response>((_, reject) => {
+      setTimeout(() => reject(new Error('Request timeout')), 30000);
+    });
+    
+    const fetchPromise = fetch(url, mergedOptions);
+    const response = await Promise.race([fetchPromise, timeoutPromise]) as Response;
+
+    // Log response status
+    console.log(`API Response status: ${response.status} ${response.statusText}`);
 
     // Handle HTTP errors
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      const errorMessage = errorData.message || getErrorMessage(response.status);
+      console.error('API Error Response:', {
+        status: response.status,
+        statusText: response.statusText,
+        errorData,
+      });
+      
+      // Extract detailed error information from various response formats
+      const errorMessage = 
+        errorData.detail || 
+        errorData.message || 
+        errorData.error || 
+        (Array.isArray(errorData.errors) && errorData.errors.length > 0 ? 
+          errorData.errors.map((e: any) => e.message || e).join('; ') : 
+          getErrorMessage(response.status));
+      
       throw new Error(errorMessage);
     }
 
@@ -25,8 +61,11 @@ async function fetchWithConfig<T>(url: string, options: RequestInit = {}): Promi
     }
 
     // Parse JSON response
-    return await response.json();
+    const data = await response.json();
+    console.log('API Response data:', data);
+    return data;
   } catch (error) {
+    console.error('API request failed:', error);
     if (error instanceof Error) {
       throw error;
     }
@@ -35,9 +74,6 @@ async function fetchWithConfig<T>(url: string, options: RequestInit = {}): Promi
   }
 }
 
-/**
- * Get appropriate error message from status code
- */
 function getErrorMessage(status: number): string {
   switch (status) {
     case HTTP_STATUS.BAD_REQUEST:
@@ -55,9 +91,6 @@ function getErrorMessage(status: number): string {
   }
 }
 
-/**
- * API service for making HTTP requests
- */
 export const ApiService = {
   /**
    * GET request
@@ -72,9 +105,13 @@ export const ApiService = {
    * POST request
    */
   post: async <T>(url: string, data: any): Promise<T> => {
-    return fetchWithConfig<T>(url, {
+    // Ensure URL is properly formatted
+    const formattedUrl = url.startsWith('http') ? url : `${API_CONFIG.BASE_URL}${url}`;
+    
+    return fetchWithConfig<T>(formattedUrl, {
       method: 'POST',
       body: JSON.stringify(data),
+      credentials: 'include', // Include cookies if any
     });
   },
 
@@ -84,6 +121,16 @@ export const ApiService = {
   put: async <T>(url: string, data: any): Promise<T> => {
     return fetchWithConfig<T>(url, {
       method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  },
+
+  /**
+   * PATCH request for partial updates
+   */
+  patch: async <T>(url: string, data: any): Promise<T> => {
+    return fetchWithConfig<T>(url, {
+      method: 'PATCH',
       body: JSON.stringify(data),
     });
   },

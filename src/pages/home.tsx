@@ -1,22 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import UserCreationForm from './user'; // Fixed import path
-import { UserService, User } from '../services/user.service';
-
-interface User {
-  uid: string;
-  name?: string;
-  given_name?: string;
-  middle_name?: string;
-  family_name?: string;
-  nickname?: string;
-  email?: string;
-  phone_number?: string;
-  comment?: string;
-  picture?: string;
-  directory?: string;
-  metadata?: Record<string, any>;
-  tags?: string[];
-}
+import UserCreationForm from './user';
+import { UserService, User, UserListResponse } from '../services/user.service';
 
 const HomePage: React.FC = () => {
   const [users, setUsers] = useState<User[]>([]);
@@ -30,12 +14,10 @@ const HomePage: React.FC = () => {
     const fetchUsers = async () => {
       setLoading(true);
       try {
-        // Use UserService instead of direct fetch
         const data = await UserService.getAllUsers();
         setUsers(data);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to fetch users');
-        // Fallback to sample data in case of error
         setUsers(sampleUsers);
       } finally {
         setLoading(false);
@@ -45,14 +27,17 @@ const HomePage: React.FC = () => {
     fetchUsers();
   }, []);
 
-  const filteredUsers = users.filter(user => {
-    const searchString = searchTerm.toLowerCase();
-    return (
-      user.uid.toLowerCase().includes(searchString) ||
-      (user.name?.toLowerCase().includes(searchString) || false) ||
-      (user.email?.toLowerCase().includes(searchString) || false)
-    );
-  });
+  // Add safeguard to ensure users is an array before filtering
+  const filteredUsers = Array.isArray(users) 
+    ? users.filter(user => {
+        const searchString = searchTerm.toLowerCase();
+        return (
+          user.uid.toLowerCase().includes(searchString) ||
+          (user.name?.toLowerCase().includes(searchString) || false) ||
+          (user.email?.toLowerCase().includes(searchString) || false)
+        );
+      })
+    : [];
 
   // Handle user creation success
   const handleUserCreated = (newUser: User) => {
@@ -160,7 +145,7 @@ const HomePage: React.FC = () => {
                 <div className="bg-gray-800 p-4 rounded border border-gray-700">
                   <p className="text-white"><strong className="text-gray-300">Email:</strong> {selectedUser.email || 'N/A'}</p>
                   <p className="text-white"><strong className="text-gray-300">Phone:</strong> {selectedUser.phone_number || 'N/A'}</p>
-                  <p className="text-white"><strong className="text-gray-300">Directory:</strong> {selectedUser.directory || 'N/A'}</p>
+                  <p className="text-white"><strong className="text-gray-300">Directory:</strong> {selectedUser.directory ? String(selectedUser.directory) : 'N/A'}</p>
                   <p className="text-white"><strong className="text-gray-300">Comment:</strong> {selectedUser.comment || 'N/A'}</p>
                 </div>
               </div>
@@ -171,7 +156,18 @@ const HomePage: React.FC = () => {
               {selectedUser.picture ? (
                 <div className="bg-gray-800 p-4 rounded border border-gray-700">
                   <img 
-                    src={selectedUser.picture} 
+                    src={typeof selectedUser.picture === 'string' 
+                      ? selectedUser.picture 
+                      : selectedUser.picture.thumbnail_url || selectedUser.avatar_url || selectedUser.picture.raw
+                    } 
+                    alt={`${selectedUser.name || selectedUser.uid}'s profile`}
+                    className="h-20 w-20 object-cover rounded"
+                  />
+                </div>
+              ) : selectedUser.avatar_url ? (
+                <div className="bg-gray-800 p-4 rounded border border-gray-700">
+                  <img 
+                    src={selectedUser.avatar_url} 
                     alt={`${selectedUser.name || selectedUser.uid}'s profile`}
                     className="h-20 w-20 object-cover rounded"
                   />
@@ -277,10 +273,15 @@ const HomePage: React.FC = () => {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
-                      {user.picture ? (
+                      {user.avatar_url || user.picture ? (
                         <img
                           className="h-8 w-8 rounded-full mr-2 object-cover"
-                          src={user.picture}
+                          src={
+                            user.avatar_url || 
+                            (typeof user.picture === 'string' 
+                              ? user.picture 
+                              : user.picture?.thumbnail_url || user.picture?.raw)
+                          }
                           alt={`${user.name || user.uid}'s profile`}
                         />
                       ) : (
@@ -342,20 +343,25 @@ const HomePage: React.FC = () => {
   );
 };
 
-// Sample data for demonstration
+// Sample data for demonstration (updated to match new interface)
 const sampleUsers: User[] = [
   {
+    id: 1,
     uid: "john_doe",
     name: "John Doe",
     given_name: "John",
     family_name: "Doe",
     email: "john.doe@example.com",
     phone_number: "+1 (555) 123-4567",
-    picture: "https://i.pravatar.cc/150?img=1",
+    avatar_url: "https://i.pravatar.cc/150?img=1",
     tags: ["admin", "developer"],
-    metadata: { department: "Engineering", level: "Senior" }
+    metadata: { department: "Engineering", level: "Senior" },
+    created_at: "2023-01-01T00:00:00Z",
+    updated_at: "2023-04-15T00:00:00Z",
+    is_trashed: false
   },
   {
+    id: 2,
     uid: "jane_smith",
     name: "Jane Smith",
     given_name: "Jane",
@@ -363,11 +369,15 @@ const sampleUsers: User[] = [
     family_name: "Smith",
     email: "jane.smith@example.com",
     phone_number: "+1 (555) 987-6543",
-    picture: "https://i.pravatar.cc/150?img=5",
+    avatar_url: "https://i.pravatar.cc/150?img=5",
     tags: ["manager", "marketing"],
-    metadata: { department: "Marketing", region: "West" }
+    metadata: { department: "Marketing", region: "West" },
+    created_at: "2023-01-01T00:00:00Z",
+    updated_at: "2023-04-15T00:00:00Z",
+    is_trashed: false
   },
   {
+    id: 3,
     uid: "robert_johnson",
     name: "Robert Johnson",
     given_name: "Robert",
@@ -376,9 +386,13 @@ const sampleUsers: User[] = [
     email: "rob.johnson@example.com",
     phone_number: "+1 (555) 456-7890",
     tags: ["support", "customer-success"],
-    metadata: { department: "Customer Success", startDate: "2023-01-15" }
+    metadata: { department: "Customer Success", startDate: "2023-01-15" },
+    created_at: "2023-01-01T00:00:00Z",
+    updated_at: "2023-04-15T00:00:00Z",
+    is_trashed: false
   },
   {
+    id: 4,
     uid: "sarah_williams",
     name: "Sarah Williams",
     given_name: "Sarah",
@@ -386,9 +400,13 @@ const sampleUsers: User[] = [
     email: "sarah.williams@example.com",
     directory: "external",
     tags: ["contractor", "design"],
-    metadata: { contract: "6 months", expertise: "UI/UX" }
+    metadata: { contract: "6 months", expertise: "UI/UX" },
+    created_at: "2023-01-01T00:00:00Z",
+    updated_at: "2023-04-15T00:00:00Z",
+    is_trashed: false
   },
   {
+    id: 5,
     uid: "michael_brown",
     name: "Michael Brown",
     given_name: "Michael",
@@ -397,7 +415,10 @@ const sampleUsers: User[] = [
     phone_number: "+1 (555) 234-5678",
     comment: "Part-time employee",
     tags: ["finance", "part-time"],
-    metadata: { hours: "20 per week", location: "Remote" }
+    metadata: { hours: "20 per week", location: "Remote" },
+    created_at: "2023-01-01T00:00:00Z",
+    updated_at: "2023-04-15T00:00:00Z",
+    is_trashed: false
   }
 ];
 const styles = document.createElement('style');
