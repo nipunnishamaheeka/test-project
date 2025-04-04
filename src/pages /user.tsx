@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { UserService } from '../services/user.service';
 
 interface UserFormData {
   uid: string;
@@ -137,24 +138,14 @@ const UserCreationForm: React.FC<UserCreationFormProps> = ({ onUserCreated }) =>
     setIsLoading(true);
     
     try {
-      // API call would go here
-      const response = await fetch('/api/users', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      });
-      
-      if (!response.ok) {
-        throw new Error(`Error: ${response.status}`);
-      }
+      // Use the UserService instead of direct fetch
+      const response = await UserService.createUser(formData);
       
       setSuccess(true);
       
       // Call the callback if provided
       if (onUserCreated) {
-        onUserCreated(formData);
+        onUserCreated(response);
       }
       
       // Reset form after successful submission

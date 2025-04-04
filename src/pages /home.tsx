@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import UserCreationForm from './user'; // Fixed import path
+import { UserService, User } from '../services/user.service';
 
 interface User {
   uid: string;
@@ -29,17 +30,12 @@ const HomePage: React.FC = () => {
     const fetchUsers = async () => {
       setLoading(true);
       try {
-        const response = await fetch('/api/users');
-        
-        if (!response.ok) {
-          throw new Error(`Error: ${response.status}`);
-        }
-        
-        const data = await response.json();
+        // Use UserService instead of direct fetch
+        const data = await UserService.getAllUsers();
         setUsers(data);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to fetch users');
-
+        // Fallback to sample data in case of error
         setUsers(sampleUsers);
       } finally {
         setLoading(false);
@@ -68,12 +64,11 @@ const HomePage: React.FC = () => {
   const handleDeleteUser = async (uid: string) => {
     if (window.confirm('Are you sure you want to delete this user?')) {
       try {
-
-        // await fetch(`/api/users/${uid}`, { method: 'DELETE' });
-
+        // Use UserService delete method
+        await UserService.deleteUser(uid);
         setUsers(prevUsers => prevUsers.filter(user => user.uid !== uid));
       } catch (err) {
-        setError('Failed to delete user');
+        setError(err instanceof Error ? err.message : 'Failed to delete user');
       }
     }
   };
